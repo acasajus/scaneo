@@ -7,18 +7,18 @@ package {{.PackageName}}
 
 import "database/sql"
 
-{{range .Tokens}}func {{$.Visibility}}can{{title .Name}}(r *sql.Row) ({{.Name}}, error) {
+{{range .Tokens}}func {{$.Visibility}}can{{title .Name}}(r *sql.Row) (*{{.Name}}, error) {
 	var s {{.Name}}
 	if err := r.Scan({{range .Fields}}
 		&s.{{.Name}},{{end}}
 	); err != nil {
-		return {{.Name}}{}, err
+		return nil, err
 	}
-	return s, nil
+	return &s, nil
 }
 
-func {{$.Visibility}}can{{title .Name}}s(rs *sql.Rows) ([]{{.Name}}, error) {
-	structs := make([]{{.Name}}, 0, 16)
+func {{$.Visibility}}can{{title .Name}}s(rs *sql.Rows) ([]*{{.Name}}, error) {
+	structs := make([]*{{.Name}}, 0, 16)
 	var err error
 	for rs.Next() {
 		var s {{.Name}}
@@ -27,13 +27,18 @@ func {{$.Visibility}}can{{title .Name}}s(rs *sql.Rows) ([]{{.Name}}, error) {
 		); err != nil {
 			return nil, err
 		}
-		structs = append(structs, s)
+		structs = append(structs, &s)
 	}
 	if err = rs.Err(); err != nil {
 		return nil, err
 	}
 	return structs, nil
 }
+{{$fLen := len .Fields}}
+var (
+	insert{{title .Name}}Fields = "({{range $key, $value := .Fields}}{{if $i}}, {{end}}{{$value.Name}}{{end}})"
+	select{{title .Name}}Fields = "{{range $key, $value := .Fields}}{{if $i}}, {{end}}{{$value.Name}}{{end}}"
+)
 
 {{end}}{{end}}`
 )
