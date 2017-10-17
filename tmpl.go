@@ -44,10 +44,13 @@ func {{if $.Visibility}}F{{else}}f{{end}}ields{{title .Name}}(i *{{.Name}}) []in
 	return o
 }
 
-{{$fLen := len .Fields}}
+{{$fLen := len .Fields -}}
+{{$typeName := .Name -}}
 var (
-	insert{{title .Name}}Fields = "({{range $i, $v := .Fields}}{{if $i}}, {{end}}{{$v.Name}}{{end}})"
-	select{{title .Name}}Fields = "{{range $i, $v := .Fields}}{{if $i}}, {{end}}{{$v.Name}}{{end}}"
+	insert{{title .Name}}Fields = "({{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}})"
+	insert{{title .Name}}Bind = "({{range $i, $v := .Fields}}{{if $i}},{{end}}${{inc $i}}{{end}})"
+	select{{title .Name}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}}"
+	select{{title .Name}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{title $typeName}}.{{$v.Name}}{{end}}"
 )
 
 {{end -}}

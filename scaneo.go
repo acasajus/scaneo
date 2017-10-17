@@ -367,7 +367,12 @@ func genFile(outFile, pkg string, unexport bool, toks []structToken) error {
 		data.Visibility = false
 	}
 
-	fnMap := template.FuncMap{"title": strings.Title}
+	fnMap := template.FuncMap{
+		"title": strings.Title,
+		"inc": func(i int) int {
+			return i + 1
+		},
+	}
 	scansTmpl, err := template.New("scans").Funcs(fnMap).Parse(scansText)
 	if err != nil {
 		return err
