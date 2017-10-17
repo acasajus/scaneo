@@ -8,7 +8,7 @@ package {{.PackageName}}
 import "database/sql"
 
 {{range .Tokens -}}
-func {{if $.Visibility}}S{{else}}s{{end}}can{{title .Name}}(r *sql.Row) (*{{.Name}}, error) {
+func {{visible "s"}}can{{title .Name}}(r *sql.Row) (*{{.Name}}, error) {
 	var s {{.Name}}
 	if err := r.Scan({{range .Fields}}
 		&s.{{.Name}},{{end}}
@@ -18,7 +18,7 @@ func {{if $.Visibility}}S{{else}}s{{end}}can{{title .Name}}(r *sql.Row) (*{{.Nam
 	return &s, nil
 }
 
-func {{if $.Visibility}}S{{else}}s{{end}}can{{title .Name}}s(rs *sql.Rows) ([]*{{.Name}}, error) {
+func {{visible "s"}}can{{title .Name}}s(rs *sql.Rows) ([]*{{.Name}}, error) {
 	structs := make([]*{{.Name}}, 0, 16)
 	var err error
 	for rs.Next() {
@@ -36,7 +36,7 @@ func {{if $.Visibility}}S{{else}}s{{end}}can{{title .Name}}s(rs *sql.Rows) ([]*{
 	return structs, nil
 }
 
-func {{if $.Visibility}}F{{else}}f{{end}}ields{{title .Name}}(i *{{.Name}}) []interface{} {
+func {{visible "f"}}ields{{title .Name}}(i *{{.Name}}) []interface{} {
 	o := make([]interface{},{{len .Fields}})
 	{{range $i, $v := .Fields -}}
 	o[{{$i}}] = i.{{$v.Name}}
@@ -47,11 +47,16 @@ func {{if $.Visibility}}F{{else}}f{{end}}ields{{title .Name}}(i *{{.Name}}) []in
 {{$fLen := len .Fields -}}
 {{$typeName := .Name -}}
 var (
-	insert{{title .Name}}Fields = "({{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}})"
-	insert{{title .Name}}Binds = "({{range $i, $v := .Fields}}{{if $i}},{{end}}${{inc $i}}{{end}})"
-	update{{title .Name}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}=${{inc $i}}{{end}}"
-	select{{title .Name}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}}"
-	select{{title .Name}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{title $typeName}}.{{$v.Name}}{{end}}"
+	{{visible "i"}}nsert{{title .Name}}Fields = "({{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}})"
+	{{visible "i"}}nsert{{title .Name}}Binds = "({{range $i, $v := .Fields}}{{if $i}},{{end}}${{inc $i}}{{end}})"
+	{{visible "u"}}pdate{{title .Name}}Fields = "{{range $i, $v := .Fields -}}
+{{- if not $v.IsPK}}
+{{- $v.Name}}=${{inc $i}}
+{{- if not ( eq ( inc $i ) $fLen ) }},{{end}}
+{{- end}}
+{{- end}}"
+	{{visible "s"}}elect{{title .Name}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}}"
+	{{visible "s"}}elect{{title .Name}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{title $typeName}}.{{$v.Name}}{{end}}"
 )
 
 {{end -}}

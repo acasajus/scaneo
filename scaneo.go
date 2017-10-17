@@ -70,6 +70,7 @@ NOTES
 type fieldToken struct {
 	Name string
 	Type string
+	IsPK bool
 }
 
 type structToken struct {
@@ -271,9 +272,17 @@ func parseCode(source string, commaList string) ([]structToken, error) {
 					continue
 				}
 
+				isPK := false
+				if fieldLine.Tag != nil && fieldLine.Tag.Kind == token.STRING {
+					idx := strings.Index(fieldLine.Tag.Value, "scaneo:")
+					if idx > -1 {
+						isPK = true
+					}
+				}
 				// apply type to all variables declared in this line
 				for i := range fieldToks {
 					fieldToks[i].Type = fieldType
+					fieldToks[i].IsPK = isPK
 				}
 
 				structTok.Fields = append(structTok.Fields, fieldToks...)
@@ -355,16 +364,9 @@ func genFile(outFile, pkg string, unexport bool, toks []structToken) error {
 	data := struct {
 		PackageName string
 		Tokens      []structToken
-		Visibility  bool
 	}{
 		PackageName: pkg,
-		Visibility:  true,
 		Tokens:      toks,
-	}
-
-	if unexport {
-		// func name will be scanFoo instead of ScanFoo
-		data.Visibility = false
 	}
 
 	fnMap := template.FuncMap{
@@ -372,6 +374,19 @@ func genFile(outFile, pkg string, unexport bool, toks []structToken) error {
 		"inc": func(i int) int {
 			return i + 1
 		},
+		"dec": func(i int) int {
+			return i - 1
+		},
+	}
+	if unexport {
+		// func name will be scanFoo instead of ScanFoo
+		fnMap["visible"] = func(s string) string {
+			return strings.ToLower(s)
+		}
+	} else {
+		fnMap["visible"] = func(s string) string {
+			return strings.ToUpper(s)
+		}
 	}
 	scansTmpl, err := template.New("scans").Funcs(fnMap).Parse(scansText)
 	if err != nil {
