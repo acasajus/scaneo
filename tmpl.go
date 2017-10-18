@@ -29,15 +29,15 @@ func (o {{.SourceName}}) {{visible "d"}}bPKFields{{title .SourceName}}(i *{{.Sou
 }
 
 func (o {{.SourceName}}) {{visible "d"}}bInsert(tx *sql.Tx) (sql.Result,error) {
-	return tx.Exec("INSERT INTO \"{{.Name}}\" "+{{visible "i"}}nsert{{title .Name}}Fields+" VALUES "+{{visible "i"}}nsert{{title .Name}}Binds{{range .Fields}},o.{{.SourceName}}{{end}})
+	return tx.Exec("INSERT INTO \"{{.Name}}\" "+{{visible "i"}}nsert{{title .SourceName}}Fields+" VALUES "+{{visible "i"}}nsert{{title .SourceName}}Binds{{range .Fields}},o.{{.SourceName}}{{end}})
 }
 
 func (o {{.SourceName}}) {{visible "d"}}bUpdate(tx *sql.Tx) (sql.Result,error) {
-	return tx.Exec("UPDATE \"{{.Name}}\" SET "+{{visible "u"}}pdate{{title .Name}}Fields+" WHERE "+{{visible "f"}}ind{{title .Name}}Condition{{range .Fields}},o.{{.SourceName}}{{end}})
+	return tx.Exec("UPDATE \"{{.Name}}\" SET "+{{visible "u"}}pdate{{title .SourceName}}Fields+" WHERE "+{{visible "f"}}ind{{title .SourceName}}Condition{{range .Fields}},o.{{.SourceName}}{{end}})
 }
 
 func (o *{{.SourceName}}) {{visible "d"}}bFind(tx *sql.Tx) (error) {
-	r := tx.QueryRow( "SELECT "+{{visible "s"}}elect{{title .Name}}Fields+" FROM \"{{.Name}}\" WHERE "+{{visible "f"}}ind{{title .Name}}Condition{{range .PKFields}},o.{{.SourceName}}{{end}})
+	r := tx.QueryRow( "SELECT "+{{visible "s"}}elect{{title .SourceName}}Fields+" FROM \"{{.Name}}\" WHERE "+{{visible "f"}}ind{{title .SourceName}}Condition{{range .PKFields}},o.{{.SourceName}}{{end}})
 	return o.{{visible "d"}}bScanRow(r)
 }
 
@@ -63,12 +63,12 @@ func {{visible "s"}}can{{title .SourceName}}s(rs *sql.Rows) ([]*{{.SourceName}},
 {{$fLen := len .Fields -}}
 {{$typeName := .Name -}}
 const (
-	{{visible "i"}}nsert{{title .Name}}Fields = "({{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$v.Name}}\"{{end}})"
-	{{visible "i"}}nsert{{title .Name}}Binds = "({{range $i, $v := .Fields}}{{if $i}},{{end}}${{inc $i}}{{end}})"
-	{{visible "u"}}pdate{{title .Name}}Fields = "{{range $i, $v := .NonPKFields }}{{ if $i }},{{end}}\"{{$v.Name}}\"=${{inc $v.Index}}{{end}}"
-	{{visible "f"}}ind{{title .Name}}Condition = "{{range $i, $v := .PKFields }}{{ if $i }} AND {{end}}\"{{$v.Name}}\"=${{inc $v.Index}}{{end}}"
-	{{visible "s"}}elect{{title .Name}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$v.Name}}\"{{end}}"
-	{{visible "s"}}elect{{title .Name}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$typeName}}.{{$v.Name}}\"{{end}}"
+	{{visible "i"}}nsert{{title .SourceName}}Fields = "({{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$v.Name}}\"{{end}})"
+	{{visible "i"}}nsert{{title .SourceName}}Binds = "({{range $i, $v := .Fields}}{{if $i}},{{end}}${{inc $i}}{{end}})"
+	{{visible "u"}}pdate{{title .SourceName}}Fields = "{{range $i, $v := .NonPKFields }}{{ if $i }},{{end}}\"{{$v.Name}}\"=${{inc $v.Index}}{{end}}"
+	{{visible "f"}}ind{{title .SourceName}}Condition = "{{range $i, $v := .PKFields }}{{ if $i }} AND {{end}}\"{{$v.Name}}\"=${{inc $v.Index}}{{end}}"
+	{{visible "s"}}elect{{title .SourceName}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$v.Name}}\"{{end}}"
+	{{visible "s"}}elect{{title .SourceName}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$typeName}}.{{$v.Name}}\"{{end}}"
 )
 
 {{end -}}
