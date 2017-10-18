@@ -276,16 +276,26 @@ func parseCode(source string, commaList string) ([]structToken, error) {
 				}
 
 				isPK := false
+				tagName := ""
 				if fieldLine.Tag != nil && fieldLine.Tag.Kind == token.STRING {
 					idx := strings.Index(fieldLine.Tag.Value, "scaneo:")
-					if idx > -1 {
-						isPK = true
+					b := idx + len("scaneo:") + 1
+					e := strings.Index(fieldLine.Tag.Value[b:], `"`) + b
+					for _, val := range strings.Split(fieldLine.Tag.Value[b:e], ",") {
+						if val == "pk" {
+							isPK = true
+						} else {
+							tagName = val
+						}
 					}
 				}
 				// apply type to all variables declared in this line
 				for i := range fieldToks {
 					fieldToks[i].Type = fieldType
 					fieldToks[i].IsPK = isPK
+					if len(tagName) > 0 {
+						fieldToks[i].Name = tagName
+					}
 				}
 
 				for _, ft := range fieldToks {
