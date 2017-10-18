@@ -63,12 +63,12 @@ func {{visible "s"}}can{{title .Name}}s(rs *sql.Rows) ([]*{{.Name}}, error) {
 {{$fLen := len .Fields -}}
 {{$typeName := .Name -}}
 const (
-	{{visible "i"}}nsert{{title .Name}}Fields = "({{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}})"
+	{{visible "i"}}nsert{{title .Name}}Fields = "({{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$v.Name}}\"{{end}})"
 	{{visible "i"}}nsert{{title .Name}}Binds = "({{range $i, $v := .Fields}}{{if $i}},{{end}}${{inc $i}}{{end}})"
-	{{visible "u"}}pdate{{title .Name}}Fields = "{{range $i, $v := .NonPKFields }}{{ if $i }},{{end}}{{$v.Name}}=${{inc $v.Index}}{{end}}"
-	{{visible "f"}}ind{{title .Name}}Condition = "{{range $i, $v := .PKFields }}{{ if $i }} AND {{end}}{{$v.Name}}=${{inc $v.Index}}{{end}}"
-	{{visible "s"}}elect{{title .Name}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}}"
-	{{visible "s"}}elect{{title .Name}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{title $typeName}}.{{$v.Name}}{{end}}"
+	{{visible "u"}}pdate{{title .Name}}Fields = "{{range $i, $v := .NonPKFields }}{{ if $i }},{{end}}\"{{$v.Name}}\"=${{inc $v.Index}}{{end}}"
+	{{visible "f"}}ind{{title .Name}}Condition = "{{range $i, $v := .PKFields }}{{ if $i }} AND {{end}}\"{{$v.Name}}\"=${{inc $v.Index}}{{end}}"
+	{{visible "s"}}elect{{title .Name}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$v.Name}}\"{{end}}"
+	{{visible "s"}}elect{{title .Name}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{title $typeName}}.{{$v.Name}}\"{{end}}"
 )
 
 {{end -}}
