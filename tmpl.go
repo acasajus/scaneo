@@ -28,11 +28,11 @@ func (o {{.Name}}) {{visible "d"}}bPKFields{{title .Name}}(i *{{.Name}}) []inter
 	return ar
 }
 
-func (o {{.Name}}) {{visible "d"}}bInsert(tx *sql.Tx) (int,error) {
+func (o {{.Name}}) {{visible "d"}}bInsert(tx *sql.Tx) (sql.Result,error) {
 	return tx.Exec("INSERT INTO \"{{.Name}}\" "+{{visible "i"}}nsert{{title .Name}}Fields+" VALUES "+{{visible "i"}}nsert{{title .Name}}Binds{{range .Fields}},o.{{.Name}}{{end}})
 }
 
-func (o {{.Name}}) {{visible "d"}}bUpdate(tx *sql.Tx) (int,error) {
+func (o {{.Name}}) {{visible "d"}}bUpdate(tx *sql.Tx) (sql.Result,error) {
 	return tx.Exec("UPDATE \"{{.Name}}\" SET "+{{visible "u"}}pdate{{title .Name}}Fields+" WHERE "+{{visible "f"}}ind{{title .Name}}Condition{{range .Fields}},o.{{.Name}}{{end}})
 }
 
