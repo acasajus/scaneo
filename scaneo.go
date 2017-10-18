@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"unicode"
 )
 
 const (
@@ -68,14 +69,16 @@ NOTES
 )
 
 type fieldToken struct {
-	Name  string
-	Type  string
-	IsPK  bool
-	Index int
+	SourceName string
+	Name       string
+	Type       string
+	IsPK       bool
+	Index      int
 }
 
 type structToken struct {
 	Name        string
+	SourceName  string
 	Fields      []fieldToken
 	PKFields    []fieldToken
 	NonPKFields []fieldToken
@@ -233,13 +236,15 @@ func parseCode(source string, commaList string) ([]structToken, error) {
 			// filter logic
 			if structName := typeSpec.Name.Name; !filter {
 				// no filter, collect everything
-				structTok.Name = structName
+				structTok.SourceName = structName
+				structTok.Name = toSnakeCase(structName)
 			} else if _, exists := wlist[structName]; filter && !exists {
 				// if structName not in whitelist, continue
 				continue
 			} else if filter && exists {
 				// structName exists in whitelist
-				structTok.Name = structName
+				structTok.SourceName = structName
+				structTok.Name = toSnakeCase(structName)
 			}
 
 			structTok.Fields = make([]fieldToken, 0, len(structType.Fields.List))
@@ -250,7 +255,8 @@ func parseCode(source string, commaList string) ([]structToken, error) {
 
 				// get field name (or names because multiple vars can be declared in 1 line)
 				for i, fieldName := range fieldLine.Names {
-					fieldToks[i].Name = parseIdent(fieldName)
+					fieldToks[i].SourceName = parseIdent(fieldName)
+					fieldToks[i].Name = toSnakeCase(fieldToks[i].SourceName)
 				}
 
 				var fieldType string
@@ -376,7 +382,7 @@ func genFile(outFile, pkg string, unexport bool, toks []structToken) error {
 		return errors.New("no structs found")
 	}
 
-	fout, err := os.Create(outFile)
+	fout, err := os.OpenFile(outFile, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}
@@ -419,4 +425,19 @@ func genFile(outFile, pkg string, unexport bool, toks []structToken) error {
 	}
 
 	return nil
+}
+
+func toSnakeCase(in string) string {
+	runes := []rune(in)
+	length := len(runes)
+
+	var out []rune
+	for i := 0; i < length; i++ {
+		if i > 0 && unicode.IsUpper(runes[i]) && ((i+1 < length && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1])) {
+			out = append(out, '_')
+		}
+		out = append(out, unicode.ToLower(runes[i]))
+	}
+
+	return string(out)
 }
