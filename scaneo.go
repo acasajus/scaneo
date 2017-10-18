@@ -68,14 +68,17 @@ NOTES
 )
 
 type fieldToken struct {
-	Name string
-	Type string
-	IsPK bool
+	Name  string
+	Type  string
+	IsPK  bool
+	Index int
 }
 
 type structToken struct {
-	Name   string
-	Fields []fieldToken
+	Name        string
+	Fields      []fieldToken
+	PKFields    []fieldToken
+	NonPKFields []fieldToken
 }
 
 func main() {
@@ -285,7 +288,15 @@ func parseCode(source string, commaList string) ([]structToken, error) {
 					fieldToks[i].IsPK = isPK
 				}
 
-				structTok.Fields = append(structTok.Fields, fieldToks...)
+				for _, ft := range fieldToks {
+					ft.Index = len(structTok.Fields)
+					structTok.Fields = append(structTok.Fields, ft)
+					if ft.IsPK {
+						structTok.PKFields = append(structTok.PKFields, ft)
+					} else {
+						structTok.NonPKFields = append(structTok.NonPKFields, ft)
+					}
+				}
 			}
 
 			structToks = append(structToks, structTok)

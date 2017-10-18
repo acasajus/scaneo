@@ -8,14 +8,37 @@ package {{.PackageName}}
 import "database/sql"
 
 {{range .Tokens -}}
-func {{visible "s"}}can{{title .Name}}(r *sql.Row) (*{{.Name}}, error) {
-	var s {{.Name}}
-	if err := r.Scan({{range .Fields}}
-		&s.{{.Name}},{{end}}
-	); err != nil {
-		return nil, err
-	}
-	return &s, nil
+func (o *{{.Name}}) {{visible "d"}}bScanRow(r *sql.Row) error {
+	return r.Scan({{range .Fields}}&o.{{.Name}},{{end}})
+}
+
+func (o {{.Name}}) {{visible "d"}}bAllFields{{title .Name}}(i *{{.Name}}) []interface{} {
+	ar := make([]interface{},{{len .Fields}})
+	{{range $i, $v := .Fields -}}
+	ar[{{$i}}] = i.{{$v.Name}}
+	{{end -}}
+	return ar
+}
+
+func (o {{.Name}}) {{visible "d"}}bPKFields{{title .Name}}(i *{{.Name}}) []interface{} {
+	ar := make([]interface{},{{len .PKFields}})
+	{{range $i, $v := .PKFields -}}
+	ar[{{$i}}] = i.{{$v.Name}}
+	{{end -}}
+	return ar
+}
+
+func (o {{.Name}}) {{visible "d"}}bInsert(tx *sql.Tx) (int,error) {
+	return tx.Exec("INSERT INTO \"{{.Name}}\" "+{{visible "i"}}nsert{{title .Name}}Fields+" VALUES "+{{visible "i"}}nsert{{title .Name}}Binds{{range .Fields}},o.{{.Name}}{{end}})
+}
+
+func (o {{.Name}}) {{visible "d"}}bUpdate(tx *sql.Tx) (int,error) {
+	return tx.Exec("UPDATE \"{{.Name}}\" SET "+{{visible "u"}}pdate{{title .Name}}Fields+" WHERE "+{{visible "f"}}ind{{title .Name}}Condition{{range .Fields}},o.{{.Name}}{{end}})
+}
+
+func (o *{{.Name}}) {{visible "d"}}bFind(tx *sql.Tx) (error) {
+	r := tx.QueryRow( "SELECT "+{{visible "s"}}elect{{title .Name}}Fields+" FROM \"{{.Name}}\" WHERE "+{{visible "f"}}ind{{title .Name}}Condition{{range .PKFields}},o.{{.Name}}{{end}})
+	return o.{{visible "d"}}bScanRow(r)
 }
 
 func {{visible "s"}}can{{title .Name}}s(rs *sql.Rows) ([]*{{.Name}}, error) {
@@ -24,7 +47,8 @@ func {{visible "s"}}can{{title .Name}}s(rs *sql.Rows) ([]*{{.Name}}, error) {
 	for rs.Next() {
 		var s {{.Name}}
 		if err = rs.Scan({{range .Fields}}
-			&s.{{.Name}},{{end}}
+			&s.{{.Name}},
+		{{- end}}
 		); err != nil {
 			return nil, err
 		}
@@ -36,25 +60,13 @@ func {{visible "s"}}can{{title .Name}}s(rs *sql.Rows) ([]*{{.Name}}, error) {
 	return structs, nil
 }
 
-func {{visible "f"}}ields{{title .Name}}(i *{{.Name}}) []interface{} {
-	o := make([]interface{},{{len .Fields}})
-	{{range $i, $v := .Fields -}}
-	o[{{$i}}] = i.{{$v.Name}}
-	{{end -}}
-	return o
-}
-
 {{$fLen := len .Fields -}}
 {{$typeName := .Name -}}
-var (
+const (
 	{{visible "i"}}nsert{{title .Name}}Fields = "({{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}})"
 	{{visible "i"}}nsert{{title .Name}}Binds = "({{range $i, $v := .Fields}}{{if $i}},{{end}}${{inc $i}}{{end}})"
-	{{visible "u"}}pdate{{title .Name}}Fields = "{{range $i, $v := .Fields -}}
-{{- if not $v.IsPK}}
-{{- $v.Name}}=${{inc $i}}
-{{- if not ( eq ( inc $i ) $fLen ) }},{{end}}
-{{- end}}
-{{- end}}"
+	{{visible "u"}}pdate{{title .Name}}Fields = "{{range $i, $v := .NonPKFields }}{{ if $i }},{{end}}{{$v.Name}}=${{inc $v.Index}}{{end}}"
+	{{visible "f"}}ind{{title .Name}}Condition = "{{range $i, $v := .PKFields }}{{ if $i }} AND {{end}}{{$v.Name}}=${{inc $v.Index}}{{end}}"
 	{{visible "s"}}elect{{title .Name}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{$v.Name}}{{end}}"
 	{{visible "s"}}elect{{title .Name}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}{{title $typeName}}.{{$v.Name}}{{end}}"
 )
