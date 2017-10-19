@@ -68,7 +68,7 @@ const (
 	{{visible "u"}}pdate{{title .SourceName}}Fields = "{{range $i, $v := .NonPKFields }}{{ if $i }},{{end}}\"{{$v.Name}}\"=${{inc $v.Index}}{{end}}"
 	{{visible "f"}}ind{{title .SourceName}}Condition = "{{range $i, $v := .PKFields }}{{ if $i }} AND {{end}}\"{{$v.Name}}\"=${{inc $v.Index}}{{end}}"
 	{{visible "s"}}elect{{title .SourceName}}Fields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$v.Name}}\"{{end}}"
-	{{visible "s"}}elect{{title .SourceName}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$typeName}}.{{$v.Name}}\"{{end}}"
+	{{visible "s"}}elect{{title .SourceName}}FullFields = "{{range $i, $v := .Fields}}{{if $i}},{{end}}\"{{$typeName}}\".\"{{$v.Name}}\"{{end}}"
 )
 
 {{end -}}
