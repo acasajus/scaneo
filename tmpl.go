@@ -41,6 +41,10 @@ func (o *{{.SourceName}}) {{visible "d"}}bFind(tx *sql.Tx) (error) {
 	return o.{{visible "d"}}bScanRow(r)
 }
 
+func (o *{{.SourceName}}) {{visible "d"}}bDelete(tx *sql.Tx) (sql.Result,error) {
+	return tx.Exec( "DELETE FROM \"{{.Name}}\" WHERE "+{{visible "f"}}ind{{title .SourceName}}Condition{{range .PKFields}},o.{{.SourceName}}{{end}})
+}
+
 func {{visible "s"}}can{{title .SourceName}}s(rs *sql.Rows) ([]*{{.SourceName}}, error) {
 	structs := make([]*{{.SourceName}}, 0, 16)
 	var err error

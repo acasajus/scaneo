@@ -285,13 +285,15 @@ func parseCode(source string, commaList string) ([]structToken, error) {
 				tagName := ""
 				if fieldLine.Tag != nil && fieldLine.Tag.Kind == token.STRING {
 					idx := strings.Index(fieldLine.Tag.Value, "scaneo:")
-					b := idx + len("scaneo:") + 1
-					e := strings.Index(fieldLine.Tag.Value[b:], `"`) + b
-					for _, val := range strings.Split(fieldLine.Tag.Value[b:e], ",") {
-						if val == "pk" {
-							isPK = true
-						} else {
-							tagName = val
+					if idx > -1 {
+						b := idx + len("scaneo:") + 1
+						e := strings.Index(fieldLine.Tag.Value[b:], `"`) + b
+						for _, val := range strings.Split(fieldLine.Tag.Value[b:e], ",") {
+							if val == "pk" {
+								isPK = true
+							} else {
+								tagName = val
+							}
 						}
 					}
 				}
